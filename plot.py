@@ -1,32 +1,31 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from pathlib import Path
+import os
 
-# Cargar CSV
 df = pd.read_csv("student_exam_scores.csv")
 
-# Asegurar carpeta de salida
-assets = Path("assets")
-assets.mkdir(exist_ok=True)
+# Asegurar carpeta assets
+os.makedirs("assets", exist_ok=True)
 
-# 1) Histograma del promedio (simple: usa 'hours_studied' como ejemplo)
+# Histograma de promedio (si no tienes la columna, crea una)
+if "avg_score" not in df.columns:
+    df["avg_score"] = df.select_dtypes(include=["number"]).mean(axis=1)
+
 plt.figure()
-df['hours_studied'].plot(kind='hist', bins=10, edgecolor='black')
-plt.title("Distribución de horas de estudio")
-plt.xlabel("Horas estudiadas")
+plt.hist(df["avg_score"], bins=10)
+plt.xlabel("Promedio")
 plt.ylabel("Frecuencia")
 plt.tight_layout()
-plt.savefig(assets / "avg_hist.png")
+plt.savefig("assets/avg_hist.png")
 plt.close()
 
-# 2) Top 10 por asistencia (o por horas, elige lo que quieras)
-top10 = df.sort_values('attendance', ascending=False).head(10)
+# Top 10 por promedio
+top10 = df.sort_values("avg_score", ascending=False).head(10)
 
 plt.figure()
-plt.barh(top10['student_id'], top10['attendance'])
+plt.barh(top10["student_id"].astype(str), top10["avg_score"])
 plt.gca().invert_yaxis()
-plt.title("Top 10 por asistencia")
-plt.xlabel("Asistencia (%)")
+plt.xlabel("Promedio")
 plt.tight_layout()
-plt.savefig(assets / "top10.png")
+plt.savefig("assets/top10.png")
 plt.close()
